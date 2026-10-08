@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>4 Your Eyes Only</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      width: 100%;
+      min-height: 100%;
+      background: #000;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    }
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .wrap {
+      width: min(92vw, 420px);
+      text-align: center;
+    }
+    .title {
+      font-size: clamp(28px, 8vw, 42px);
+      font-weight: 700;
+      letter-spacing: -1.5px;
+      margin-bottom: 34px;
+    }
+    .dots {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 30px;
+      min-height: 18px;
+    }
+    .dot {
+      width: 13px;
+      height: 13px;
+      border: 1.5px solid #fff;
+      border-radius: 50%;
+      transition: .15s ease;
+    }
+    .dot.filled { background: #fff; }
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      width: min(82vw, 330px);
+      margin: auto;
+    }
+    button {
+      border: 1px solid #333;
+      background: #111;
+      color: #fff;
+      border-radius: 18px;
+      aspect-ratio: 1.35;
+      font-size: 28px;
+      font-weight: 500;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    button:active { transform: scale(.96); background: #222; }
+    .zero { grid-column: 2; }
+    .back { grid-column: 3; }
+    .message {
+      height: 24px;
+      margin-top: 20px;
+      color: #aaa;
+      font-size: 14px;
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .wrap.shake { animation: shake .28s ease; }
+      @keyframes shake {
+        25% { transform: translateX(-7px); }
+        50% { transform: translateX(7px); }
+        75% { transform: translateX(-4px); }
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap" id="app">
+    <div class="title">4 your eyes only</div>
+    <div class="dots" id="dots" aria-label="Codice a quattro cifre">
+      <span class="dot"></span><span class="dot"></span>
+      <span class="dot"></span><span class="dot"></span>
+    </div>
+
+    <div class="keypad">
+      <button data-key="1">1</button>
+      <button data-key="2">2</button>
+      <button data-key="3">3</button>
+      <button data-key="4">4</button>
+      <button data-key="5">5</button>
+      <button data-key="6">6</button>
+      <button data-key="7">7</button>
+      <button data-key="8">8</button>
+      <button data-key="9">9</button>
+      <button class="zero" data-key="0">0</button>
+      <button class="back" data-key="back">⌫</button>
+    </div>
+    <div class="message" id="message"></div>
+  </main>
+
+  <script>
+    const CORRECT_CODE = "1307";
+    const TARGET =
+      "https://open.spotify.com/artist/7p9Q69jWvU8mNd6KZuuIzA?si=fVmVMOX0RASk1wuLq12OPw&utm_source=copy-link";
+
+    let code = "";
+    const dots = [...document.querySelectorAll(".dot")];
+    const message = document.getElementById("message");
+    const app = document.getElementById("app");
+
+    function render() {
+      dots.forEach((dot, i) => dot.classList.toggle("filled", i < code.length));
+    }
+
+    function submit() {
+      if (code === CORRECT_CODE) {
+        window.location.href = TARGET;
+        return;
+      }
+      if (code.length === 4) {
+        message.textContent = "Codice non valido";
+        app.classList.remove("shake");
+        void app.offsetWidth;
+        app.classList.add("shake");
+        code = "";
+        render();
+        setTimeout(() => message.textContent = "", 1200);
+      }
+    }
+
+    function press(key) {
+      if (key === "back") {
+        code = code.slice(0, -1);
+      } else if (code.length < 4) {
+        code += key;
+        if (code.length === 4) setTimeout(submit, 120);
+      }
+      render();
+    }
+
+    document.querySelectorAll("button").forEach(btn => {
+      btn.addEventListener("click", () => press(btn.dataset.key));
+    });
+
+    document.addEventListener("keydown", e => {
+      if (/^[0-9]$/.test(e.key)) press(e.key);
+      if (e.key === "Backspace") press("back");
+    });
+  </script>
+</body>
+</html>
